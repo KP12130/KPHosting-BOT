@@ -46,10 +46,16 @@ for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
     const event = require(filePath);
     
+    // Main event
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args, client));
     } else {
         client.on(event.name, (...args) => event.execute(...args, client));
+    }
+    
+    // Secondary event (for member remove)
+    if (event.onMemberRemove) {
+        client.on(event.onMemberRemove.name, (...args) => event.onMemberRemove.execute(...args, client));
     }
 }
 
@@ -58,4 +64,3 @@ registerCommands();
 
 // Login
 client.login(process.env.DISCORD_TOKEN);
-
