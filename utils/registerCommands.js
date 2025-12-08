@@ -10,21 +10,33 @@ async function registerCommands() {
 
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
-        commands.push(command.data.toJSON());
+        try {
+            const command = require(filePath);
+            
+            // Skip if not a valid command
+            if (!command.data || typeof command.data.toJSON !== 'function') {
+                console.log(`⚠️ Skipping ${file} - not a valid command file`);
+                continue;
+            }
+            
+            commands.push(command.data.toJSON());
+            console.log(`✅ Registered command: ${command.data.name}`);
+        } catch (error) {
+            console.error(`❌ Error loading command ${file}:`, error.message);
+        }
     }
 
     const rest = new REST({ version: '10' }).setToken(config.TOKEN);
 
     try {
-        console.log('Registering slash commands...');
+        console.log('📤 Pushing slash commands to Discord...');
         await rest.put(
             Routes.applicationGuildCommands(config.CLIENT_ID, config.GUILD_ID),
             { body: commands }
         );
-        console.log('✅ Slash commands registered!');
+        console.log('✅ Slash commands registered successfully!');
     } catch (error) {
-        console.error(error);
+        console.error('❌ Error registering commands:', error);
     }
 }
 
