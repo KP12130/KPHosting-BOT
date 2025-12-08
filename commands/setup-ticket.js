@@ -8,7 +8,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.reply({ 
             content: '✅ Ticket panel created successfully!', 
-            ephemeral: true 
+            flags: 64 // ephemeral
         });
 
         const embed = new EmbedBuilder()
