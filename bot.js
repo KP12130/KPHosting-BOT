@@ -34,8 +34,20 @@ const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('
 
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    client.commands.set(command.data.name, command);
+    try {
+        const command = require(filePath);
+        
+        // Validate command structure
+        if (!command.data || !command.data.name) {
+            console.error(`❌ Command at ${file} is missing required "data" or "data.name" property`);
+            continue;
+        }
+        
+        client.commands.set(command.data.name, command);
+        console.log(`✅ Loaded command: ${command.data.name}`);
+    } catch (error) {
+        console.error(`❌ Error loading command ${file}:`, error);
+    }
 }
 
 // Load events
@@ -44,18 +56,19 @@ const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'
 
 for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
-    
-    // Main event
-    if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args, client));
-    } else {
-        client.on(event.name, (...args) => event.execute(...args, client));
-    }
-    
-    // Secondary event (for member remove)
-    if (event.onMemberRemove) {
-        client.on(event.onMemberRemove.name, (...args) => event.onMemberRemove.execute(...args, client));
+    try {
+        const event = require(filePath);
+        
+        // Main event
+        if (event.once) {
+            client.once(event.name, (...args) => event.execute(...args, client));
+        } else {
+            client.on(event.name, (...args) => event.execute(...args, client));
+        }
+        
+        console.log(`✅ Loaded event: ${event.name}`);
+    } catch (error) {
+        console.error(`❌ Error loading event ${file}:`, error);
     }
 }
 
