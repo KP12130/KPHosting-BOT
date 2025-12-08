@@ -40,7 +40,7 @@ module.exports = {
             return interaction.reply({ 
                 content: '**Please select a ticket category:**',
                 components: [selectMenu],
-                ephemeral: true 
+                flags: 64 // ephemeral
             });
         }
 
@@ -57,7 +57,7 @@ module.exports = {
             if (existingTicket) {
                 return interaction.reply({ 
                     content: '❌ You already have an open ticket!',
-                    ephemeral: true 
+                    flags: 64
                 });
             }
 
@@ -126,7 +126,7 @@ module.exports = {
 
             return interaction.reply({ 
                 content: `✅ Ticket created: ${ticketChannel}`,
-                ephemeral: true 
+                flags: 64
             });
         }
 
@@ -157,7 +157,7 @@ module.exports = {
             return interaction.reply({ 
                 embeds: [confirmEmbed],
                 components: [confirmButtons],
-                ephemeral: true
+                flags: 64
             });
         }
 
@@ -185,10 +185,16 @@ module.exports = {
                 await command.execute(interaction);
             } catch (error) {
                 console.error(error);
-                await interaction.reply({ 
+                const reply = { 
                     content: 'There was an error executing this command!', 
-                    ephemeral: true 
-                });
+                    flags: 64
+                };
+                
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp(reply);
+                } else {
+                    await interaction.reply(reply);
+                }
             }
         }
     }
